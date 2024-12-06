@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyers</title>
+<link rel="stylesheet" th:href="@{/css/buyerDashboard.css}">
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+	crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #FF7F00; /* Orange background for the navbar */
+    color: #fff; /* White text for navbar items */
+    padding: 10px;
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.navbar input[type="checkbox"] {
+    display: none;
+}
+
+.hamburger-lines {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    justify-content: space-between;
+    width: 25px;
+    height: 20px;
+}
+
+.line {
+    width: 100%;
+    height: 4px;
+    background-color: #fff; /* White hamburger lines */
+}
+
+.menu-items {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.menu-items li {
+    font-size: 18px;
+}
+
+.menu-items a {
+    text-decoration: none;
+    color: #fff; /* White text for navbar links */
+}
+
+.menu-items .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #333;
+    min-width: 160px;
+    z-index: 1;
+}
+
+.menu-items .dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.menu-items .dropdown-content a {
+    color: #fff;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.menu-items .dropdown-content a:hover {
+    background-color: #444;
+}
+
+.logo h2 {
+    margin: 0;
+    color: #fff; /* White color for logo */
+}
+
+.header {
+    background-color: #FFB74D; /* Light orange background for the header */
+    padding: 20px;
+    text-align: center;
+    color: black; /* Black text */
+    font-size: 36px;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .menu-items {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .navbar input[type="checkbox"]:checked ~ .menu-items {
+        display: flex;
+    }
+
+    .hamburger-lines {
+        display: block;
+    }
+}
+</style>
+</head>
+
+<body>
+	<nav class="navbar">
+		<div class="navbar-container">
+			<input type="checkbox" name="" id="checkbox">
+			<div class="hamburger-lines">
+				<span class="line line1"></span> <span class="line line2"></span> <span
+					class="line line3"></span>
+			</div>
+			<ul class="menu-items">
+				<li><a th:href="@{/api/v1/buyer-dashboard}">Home</a></li>
+				<li><a th:href="@{/api/v1/products}">Shop</a></li>
+				<li><a th:href="@{/api/v1/wishlist}">Favorites</a></li>
+				<li><a th:href="@{/api/v1/cart}">Cart</a></li>
+				<li><a th:href="@{/api/v1/orders/history}">Track Orders</a></li>
+				<li class="dropdown">
+			        <a href="javascript:void(0)" class="dropbtn">
+			            <i class="fas fa-user-circle"></i> Profile
+			        </a>
+			        <div class="dropdown-content">
+			            <a th:href="@{/api/v1/profile}"><i class="fas fa-id-badge"></i> My Profile</a>
+			            <a th:href="@{/api/v1/profile/edit}"><i class="fas fa-edit"></i> Edit Profile</a>
+			            <a th:href="@{/logout}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+			        </div>
+			    </li>
+			</ul>
+			<div class="logo">
+				<h2 class="mx-5">RevShop</h2>
+			</div>
+		</div>
+	</nav>
+    <!-- Header section -->
+    <div class="header">
+        Welcome to Your Buyer Dashboard!
+    </div>
+</body>
+</html>

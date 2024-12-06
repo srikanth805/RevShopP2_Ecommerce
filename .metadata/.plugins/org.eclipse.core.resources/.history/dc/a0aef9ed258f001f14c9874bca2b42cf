@@ -1,0 +1,136 @@
+package com.example.client_app.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
+
+import com.example.client_app.model.Cart;
+import com.example.client_app.model.Product;
+import com.example.client_app.model.UserModel;
+
+import reactor.core.publisher.Mono;
+
+@Controller
+@RequestMapping("/api/v1/cart")
+public class CartController {
+
+	private final static String USER_URL = "http://localhost:8090/api/v1/user?userId=";
+	private final static String CART_URL = "http://localhost:8093/api/v1/cart";
+
+	@Autowired
+	private WebClient.Builder webClientBuilder;
+
+	@GetMapping
+	public Mono<String> showCartPage(ServerWebExchange exchange, Model model) {
+		WebClient webClient = webClientBuilder.build();
+
+		return Mono.justOrEmpty(exchange.getRequest().getCookies().getFirst("userId")).map(cookie -> cookie.getValue())
+				.flatMap(userId -> {
+					return webClient.get().uri(USER_URL + userId).retrieve().bodyToMono(UserModel.class)
+							.flatMap(userModel -> {
+								if (userModel != null) {
+									return webClient.post().uri(CART_URL + "/get").bodyValue(userModel).retrieve()
+											.bodyToMono(List.class).flatMap(cartItems -> {
+												model.addAttribute("cartItems", cartItems);
+												return Mono.just("showCart");
+											});
+								} else {
+									model.addAttribute("error", "User not found");
+									return Mono.just("errorPage");
+								}
+							});
+				}).switchIfEmpty(Mono.just("redirect:/api/v1/login"));
+	}
+
+//	@PostMapping
+//	public String addToCart(Model model, @ModelAttribute Cart cart, @RequestParam("productId") int productId,
+//			@RequestParam("quantity") int quantity, HttpSession session) {
+//		System.out.println("Quantity" + quantity);
+//		int userId = (Integer) session.getAttribute("userId");
+//		UserModel userModel = restTemplate.getForObject(USER_URL+userId, UserModel.class);
+//		Product product = restTemplate.getForObject("http://localhost:8087/api/v1/products/"+productId, Product.class);
+//		cart.setUser(userModel);
+//		cart.setQuantity(quantity);
+//		cart.setProduct(product);
+//		Integer status = restTemplate.postForObject(CART_URL+"/add", cart, Integer.class);
+//		if(status == 200) {
+//			return "redirect:/api/v1/cart";
+//		}else {
+//			return "notfound";
+//		}
+//	}
+
+	@PostMapping("/{productId}")
+	public Mono<String> addToCart(ServerWebExchange exchange, Model model, @ModelAttribute Cart cart,
+			@PathVariable("productId") int productId, @RequestParam("quantity") int quantity) {
+		WebClient webClient = webClientBuilder.build();
+
+		// Extract userId from cookies
+		return Mono.justOrEmpty(exchange.getRequest().getCookies().getFirst("userId")).map(cookie -> cookie.getValue())
+				.flatMap(userId -> {
+					// Fetch the user details from USER_URL
+					Mono<UserModel> userMono = webClient.get().uri(USER_URL + userId).retrieve()
+							.bodyToMono(UserModel.class);
+
+					// Fetch the product details from product service
+					Mono<Product> productMono = webClient.get()
+							.uri("http://localhost:8087/api/v1/products/" + productId).retrieve()
+							.bodyToMono(Product.class);
+
+					// Combine both user and product info and set them into the cart
+					return Mono.zip(userMono, productMono).flatMap(tuple -> {
+						UserModel userModel = tuple.getT1();
+						Product product = tuple.getT2();
+
+						cart.setUser(userModel);
+						cart.setQuantity(quantity);
+						cart.setProduct(product);
+
+						// Add cart details via POST request
+						return webClient.post().uri(CART_URL + "/add").bodyValue(cart).retrieve()
+								.bodyToMono(Integer.class).flatMap(status -> {
+									if (status == 200) {
+										return Mono.just("redirect:/api/v1/cart");
+									} else {
+										return Mono.just("notfound");
+									}
+								});
+					});
+				}).switchIfEmpty(Mono.just("redirect:/api/v1/login")); // Redirect to login if no userId cookie
+	}
+
+//	@PostMapping("/delete")
+//	public String deleteProduct(HttpSession session, @RequestParam("productId") Integer productId) {
+//		int userId = (Integer) session.getAttribute("userId");
+//		Integer status = restTemplate.getForObject(CART_URL+"/delete?productId="+productId+"&userId="+userId, Integer.class);
+//		if(status == 200) {
+//			return "redirect:/api/v1/cart";
+//		}else {
+//			return "notfound";
+//		}
+//	}
+//	
+//	@PostMapping("/update")
+//	public String updateQuantity(HttpSession session, @RequestParam("productId") Integer productId,
+//			@RequestParam("quantity") Integer quantity) {
+//		System.out.println("Quantity" + quantity);
+//		int userId = (Integer) session.getAttribute("userId");
+//		Integer status = restTemplate.getForObject(CART_URL+"/update?productId="+productId+"&userId="+userId+"&quantity="+quantity, Integer.class);
+//		if(status == 200) {
+//			return "redirect:/api/v1/cart";
+//		}else {
+//			return "notfound";
+//		}
+//	}
+}

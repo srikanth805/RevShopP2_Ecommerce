@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Order Details</title>
+<style>
+ https://teams.microsoft.com/l/meetup-join/19%3Ameeting_MTNhMmY2NmMtMjI2Yy00ZGVjLWI0NDItZGI2Y2ZkYTlhOTgw%40thread.v2/0?context=%7B%22Tid%22%3A%226b63e28a-a8f9-47b5-aa40-97e231215164%22%2C%22Oid%22%3A%229efb936a-e37a-4616-9f12-246db708c613%22%7D
+
+</style>
+</head>
+<body>
+	<div th:include="@{/buyerNav.html}"></div>
+	<div th:each="orderItem : ${orderItems}">
+		<div class="product-row">
+	    <div class="product-card">
+	        <div class="product-image">
+	            <img th:src="${orderItem.product.imageUrl}" alt="Product Image">
+	        </div>
+	        <div class="product-details">
+	            <h2 class="product-name" th:text="${orderItem.product.name}"></h2>
+	            <p class="product-description" th:text="${orderItem.product.description}"></p>
+	            <div class="product-price-quantity">
+	                <span class="price" th:text="${orderItem.product.discountPrice}"></span>
+	            </div>
+	            <a th:href="@{'/api/v1/reviews/' + ${orderItem.product.productId}}" class="add-to-cart">Add Review</a>
+	        </div>
+	    </div>
+	</div>
+</body>
+</html>
